@@ -33,16 +33,30 @@ public:
     // Create a callback function for when messages are received.
     // Variations of this function also exist using, for example UniquePtr for zero-copy transport.
     setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+    
+    
     auto callback =
       [this](std_msgs::msg::String::ConstSharedPtr msg) -> void
       {
-        RCLCPP_INFO(this->get_logger(), "I heard: [%s]", msg->data.c_str());
+        std::string messageNumberProcessor= msg->data.c_str();
+      //Split y parse del string
+      auto pos=messageNumberProcessor.find("=");
+      if(pos != std::string::npos){
+
+        std::string numeroStr=messageNumberProcessor.substr(pos+1);
+        int value=std::stoi(numeroStr);
+        messageNumberProcessor=std::to_string(value);
+      }else{
+        messageNumberProcessor= "No se detectó separador";
+      }
+
+        RCLCPP_INFO(this->get_logger(), "Result: [%s]", messageNumberProcessor.c_str());
       };
     // Create a subscription to the topic which can be matched with one or more compatible ROS
     // publishers.
     // Note that not all publishers on the same topic with the same type will be compatible:
     // they must have compatible Quality of Service policies.
-    sub_ = create_subscription<std_msgs::msg::String>("chatter", 10, callback);
+    sub_ = create_subscription<std_msgs::msg::String>("processed_data", 10, callback);
   }
 
 private:

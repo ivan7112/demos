@@ -43,12 +43,16 @@ public:
       [this]() -> void
       {
         msg_ = std::make_unique<std_msgs::msg::String>();
-        msg_->data = "Hello World: " + std::to_string(count_++);
+        msg_->data = "fibonacci: " + std::to_string(fibonacci_);
+        count_++;
+        fibonacci_=fib(count_);
         RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", msg_->data.c_str());
         // Put the message into a queue to be processed by the middleware.
         // This call is non-blocking.
         pub_->publish(std::move(msg_));
       };
+
+    
     // Create a publisher with a custom Quality of Service profile.
     // Uniform initialization is suggested so it can be trivially changed to
     // rclcpp::KeepAll{} if the user wishes.
@@ -62,9 +66,23 @@ public:
 
 private:
   size_t count_ = 1;
+  size_t fibonacci_= 1;
   std::unique_ptr<std_msgs::msg::String> msg_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr pub_;
   rclcpp::TimerBase::SharedPtr timer_;
+
+  std::function<size_t(size_t)> fib=[this](size_t n)-> size_t{
+      
+      if(n==0){
+        return 0;
+      }
+
+      if(n==1){
+        return 1;
+      }
+      
+      return fib(n-1)+fib(n-2);
+    };
 };
 
 }  // namespace demo_nodes_cpp
